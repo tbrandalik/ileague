@@ -13,6 +13,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
     id 'com.bmuschko.docker-spring-boot-application' version '6.1.1'
     id "com.avast.gradle.docker-compose" version "0.10.5"
+    id "org.flywaydb.flyway" version "6.1.1"
     id 'java'
 }
 
@@ -75,4 +76,25 @@ docker {
         password = "e70df13e-3b1b-4d4d-aa0d-c68238e87e04"
         email = "tbrandalik@gmail.com"
     }
+}
+
+def initTestEnvironment(Task task) {
+    dockerCompose.exposeAsEnvironment(task)
+    dockerCompose.exposeAsSystemProperties(task)
+
+    def mysqlInfo = dockerCompose.servicesInfos.mysql
+    task.systemProperty 'jdbc.port', mysqlInfo.ports[3306]
+}
+
+dockerCompose.isRequiredBy(test)
+test.doFirst {
+    initTestEnvironment(it)
+}
+
+flyway {
+    url = 'jdbc:mysql://localhost:3306/ileague?autoReconnect=true&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true'
+    driver = 'com.mysql.jdbc.Driver'
+    user = 'app'
+    password = 'app'
+    schemas = ['ileague']
 }
