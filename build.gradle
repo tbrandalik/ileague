@@ -1,0 +1,78 @@
+import java.time.Duration
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.2.2.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'com.bmuschko.docker-spring-boot-application' version '6.1.1'
+    id "com.avast.gradle.docker-compose" version "0.10.5"
+    id 'java'
+}
+
+group = 'com.brandalik'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.springframework.kafka:spring-kafka'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'mysql:mysql-connector-java'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dockerCompose {
+    waitForTcpPortsTimeout = Duration.ofMinutes(1)
+    useComposeFiles = [rootProject.file("docker-compose.yml")]
+}
+
+docker {
+    springBootApplication {
+        baseImage = 'adoptopenjdk:11-jre-hotspot'
+        ports = [8080]
+        images = ['brandalik/ileague:0.0.1', 'brandalik/ileague:latest']
+    }
+    registryCredentials {
+        url = "https://index.docker.io/v1/"
+        username = "brandalik"
+        password = "e70df13e-3b1b-4d4d-aa0d-c68238e87e04"
+        email = "tbrandalik@gmail.com"
+    }
+}
