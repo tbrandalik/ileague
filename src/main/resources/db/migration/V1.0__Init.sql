@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS `leagues` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`id`))
+  ENGINE = InnoDB;
